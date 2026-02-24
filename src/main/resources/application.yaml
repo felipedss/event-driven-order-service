@@ -1,0 +1,41 @@
+#logging:
+#  level:
+#    org.springframework.boot.autoconfigure: DEBUG
+
+server:
+  port: 8081
+
+spring:
+  # ---- DATABASE ----
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # creates/updates tables automatically based on your entities
+    show-sql: true      # logs SQL queries in the console (useful for development)
+    properties:
+      hibernate:
+        format_sql: true  # formats SQL logs to be more readable
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # ---- KAFKA ----
+  kafka:
+    listener:
+      type: single
+    bootstrap-servers: localhost:9094  # use kafka:9092 if running inside Docker
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer  # serializes objects to JSON
+
+    consumer:
+      group-id: order-service  # your application name
+      auto-offset-reset: earliest   # reads from the beginning if no offset is saved
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer  # deserializes JSON back to objects
+      properties:
+        spring.json.trusted.packages: "*"  # allows deserialization of any package
