@@ -13,4 +13,16 @@ public class GlobalExceptionHandler {
   public String handleOrderNotFound(OrderNotFoundException ex) {
     return ex.getMessage();
   }
+
+  @ExceptionHandler(ProductNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public String handleProductNotFound(ProductNotFoundException ex) {
+    return ex.getMessage();
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public String handleIllegalArgument(IllegalArgumentException ex) {
+    return ex.getMessage();
+  }
 }

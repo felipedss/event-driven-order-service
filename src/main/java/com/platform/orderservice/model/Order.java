@@ -21,8 +21,12 @@ public class Order {
   @GeneratedValue(strategy = GenerationType.UUID)
   private String orderId;
 
+  private String productId;
+
   private Integer quantity;
 
   @Enumerated(EnumType.STRING)
   private OrderStatus status;
+
+  private String cancelReason;
 }

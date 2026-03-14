@@ -39,3 +39,16 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer  # deserializes JSON back to objects
       properties:
         spring.json.trusted.packages: "*"  # allows deserialization of any package
+# ---- EXTERNAL SERVICES ----
+services:
+  inventory:
+    url: http://localhost:8082
+    connect-timeout: 2s   # max time to establish a TCP connection
+    read-timeout: 5s      # max time to wait for the response once connected
+
+# ---- KAFKA TOPICS ----
+topics:
+  order:
+    created: order.created              # order-service → orchestrator
+    confirmed: order.confirmed          # orchestrator → order-service
+    canceled: order.canceled            # orchestrator → order-service

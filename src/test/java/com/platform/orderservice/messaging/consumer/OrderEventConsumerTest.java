@@ -2,8 +2,8 @@ package com.platform.orderservice.messaging.consumer;
 
 import static org.mockito.Mockito.verify;
 
-import com.platform.orderservice.event.inbound.OrderCancelledEvent;
-import com.platform.orderservice.event.inbound.OrderConfirmedEvent;
+import com.platform.orderservice.event.inbound.OrderCanceledCommand;
+import com.platform.orderservice.event.inbound.OrderConfirmedCommand;
 import com.platform.orderservice.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,13 +19,13 @@ class OrderEventConsumerTest {
 
   @Test
   void handleOrderConfirmed_delegatesToOrderService() {
-    consumer.handleOrderConfirmed(new OrderConfirmedEvent("order-1"));
+    consumer.handleOrderConfirmed(new OrderConfirmedCommand("order-1"));
     verify(orderService).confirmOrder("order-1");
   }
 
   @Test
   void handleOrderCancelled_delegatesToOrderService() {
-    consumer.handleOrderCancelled(new OrderCancelledEvent("order-2"));
-    verify(orderService).cancelOrder("order-2");
+    consumer.handleOrderCancelled(new OrderCanceledCommand("order-2", "inventory unavailable"));
+    verify(orderService).cancelOrder("order-2", "inventory unavailable");
   }
 }

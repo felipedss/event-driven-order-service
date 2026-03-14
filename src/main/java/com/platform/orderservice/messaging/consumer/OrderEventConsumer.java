@@ -1,7 +1,7 @@
 package com.platform.orderservice.messaging.consumer;
 
-import com.platform.orderservice.event.inbound.OrderCancelledEvent;
-import com.platform.orderservice.event.inbound.OrderConfirmedEvent;
+import com.platform.orderservice.event.inbound.OrderCanceledCommand;
+import com.platform.orderservice.event.inbound.OrderConfirmedCommand;
 import com.platform.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +15,17 @@ public class OrderEventConsumer {
 
   private final OrderService orderService;
 
-  @KafkaListener(topics = "order.confirmed", groupId = "${spring.kafka.consumer.group-id}")
-  public void handleOrderConfirmed(OrderConfirmedEvent event) {
-    log.info("Received order.confirmed for orderId={}", event.orderId());
-    orderService.confirmOrder(event.orderId());
+  @KafkaListener(
+      topics = "${topics.order.confirmed}",
+      groupId = "${spring.kafka.consumer.group-id}")
+  public void handleOrderConfirmed(OrderConfirmedCommand command) {
+    log.info("Received order.confirmed for orderId={}", command.orderId());
+    orderService.confirmOrder(command.orderId());
   }
 
-  @KafkaListener(topics = "order.cancelled", groupId = "${spring.kafka.consumer.group-id}")
-  public void handleOrderCancelled(OrderCancelledEvent event) {
-    log.info("Received order.cancelled for orderId={}", event.orderId());
-    orderService.cancelOrder(event.orderId());
+  @KafkaListener(topics = "${topics.order.canceled}", groupId = "${spring.kafka.consumer.group-id}")
+  public void handleOrderCancelled(OrderCanceledCommand event) {
+    log.info("Received order.canceled for orderId={}", event.orderId());
+    orderService.cancelOrder(event.orderId(), event.reason());
   }
 }

@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.platform.orderservice.exception.GlobalExceptionHandler;
 import com.platform.orderservice.exception.OrderNotFoundException;
+import com.platform.orderservice.exception.ProductNotFoundException;
 import com.platform.orderservice.model.Order;
 import com.platform.orderservice.model.OrderStatus;
 import com.platform.orderservice.service.OrderService;
@@ -40,8 +41,7 @@ class OrderControllerTest {
 
   @Test
   void postOrder_returns200_withCreatedOrder() throws Exception {
-    Order order =
-        Order.builder().orderId("id-1").quantity(3).status(OrderStatus.CREATED).build();
+    Order order = Order.builder().orderId("id-1").quantity(3).status(OrderStatus.CREATED).build();
     when(orderService.createOrder(any())).thenReturn(order);
 
     mockMvc
@@ -70,5 +70,31 @@ class OrderControllerTest {
     when(orderService.getOrder("missing")).thenThrow(new OrderNotFoundException("missing"));
 
     mockMvc.perform(get("/api/v1/orders/missing")).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void postOrder_returns400_whenProductIdIsBlank() throws Exception {
+    when(orderService.createOrder(any()))
+        .thenThrow(new IllegalArgumentException("productId must not be null or blank"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"quantity\":1}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void postOrder_returns404_whenProductNotFound() throws Exception {
+    when(orderService.createOrder(any()))
+        .thenThrow(new ProductNotFoundException("unknown-product"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"productId\":\"unknown-product\",\"quantity\":1}"))
+        .andExpect(status().isNotFound());
   }
 }

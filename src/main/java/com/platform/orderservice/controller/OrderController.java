@@ -1,7 +1,8 @@
 package com.platform.orderservice.controller;
 
-import com.platform.orderservice.command.CreateOrderCommand;
-import com.platform.orderservice.model.Order;
+import com.platform.orderservice.controller.request.CreateOrderCommand;
+import com.platform.orderservice.controller.response.OrderResponse;
+import com.platform.orderservice.mapper.OrderMapper;
 import com.platform.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,12 +20,12 @@ public class OrderController {
   private final OrderService orderService;
 
   @PostMapping
-  public Order create(@RequestBody CreateOrderCommand command) {
-    return orderService.createOrder(command);
+  public OrderResponse create(@RequestBody CreateOrderCommand command) {
+    return OrderMapper.toResponse(orderService.createOrder(command));
   }
 
   @GetMapping("/{orderId}")
-  public Order get(@PathVariable String orderId) {
-    return orderService.getOrder(orderId);
+  public OrderResponse get(@PathVariable String orderId) {
+    return OrderMapper.toResponse(orderService.getOrder(orderId));
   }
 }
