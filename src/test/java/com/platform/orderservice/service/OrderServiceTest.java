@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,6 +121,8 @@ class OrderServiceTest {
         .hasMessageContaining("missing");
   }
 
+  // ── confirmOrder ────────────────────────────────────────────────────────────
+
   @Test
   void confirmOrder_updatesStatusToConfirmed() {
     Order order =
@@ -131,6 +134,38 @@ class OrderServiceTest {
     assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
     verify(orderRepository).save(order);
   }
+
+  @Test
+  void confirmOrder_skipsUpdate_whenOrderAlreadyConfirmed() {
+    Order order =
+        Order.builder().orderId("abc-123").quantity(2).status(OrderStatus.CONFIRMED).build();
+    when(orderRepository.findById("abc-123")).thenReturn(Optional.of(order));
+
+    orderService.confirmOrder("abc-123");
+
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  void confirmOrder_skipsUpdate_whenOrderAlreadyCanceled() {
+    Order order =
+        Order.builder().orderId("abc-123").quantity(2).status(OrderStatus.CANCELED).build();
+    when(orderRepository.findById("abc-123")).thenReturn(Optional.of(order));
+
+    orderService.confirmOrder("abc-123");
+
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  void confirmOrder_throwsOrderNotFoundException_whenNotFound() {
+    when(orderRepository.findById("gone")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> orderService.confirmOrder("gone"))
+        .isInstanceOf(OrderNotFoundException.class);
+  }
+
+  // ── cancelOrder ─────────────────────────────────────────────────────────────
 
   @Test
   void cancelOrder_updatesStatusAndReasonToCanceled() {
@@ -159,11 +194,25 @@ class OrderServiceTest {
   }
 
   @Test
-  void confirmOrder_throwsOrderNotFoundException_whenNotFound() {
-    when(orderRepository.findById("gone")).thenReturn(Optional.empty());
+  void cancelOrder_skipsUpdate_whenOrderAlreadyCanceled() {
+    Order order =
+        Order.builder().orderId("abc-123").quantity(2).status(OrderStatus.CANCELED).build();
+    when(orderRepository.findById("abc-123")).thenReturn(Optional.of(order));
 
-    assertThatThrownBy(() -> orderService.confirmOrder("gone"))
-        .isInstanceOf(OrderNotFoundException.class);
+    orderService.cancelOrder("abc-123", "duplicate");
+
+    verify(orderRepository, never()).save(any());
+  }
+
+  @Test
+  void cancelOrder_skipsUpdate_whenOrderAlreadyConfirmed() {
+    Order order =
+        Order.builder().orderId("abc-123").quantity(2).status(OrderStatus.CONFIRMED).build();
+    when(orderRepository.findById("abc-123")).thenReturn(Optional.of(order));
+
+    orderService.cancelOrder("abc-123", "duplicate");
+
+    verify(orderRepository, never()).save(any());
   }
 
   @Test

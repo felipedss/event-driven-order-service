@@ -55,6 +55,10 @@ public class OrderService {
   public void confirmOrder(String orderId) {
     Order order =
         orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+    if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.CANCELED) {
+      log.warn("Order {} already in terminal state {}, skipping confirm", orderId, order.getStatus());
+      return;
+    }
     order.setStatus(OrderStatus.CONFIRMED);
     orderRepository.save(order);
     log.info("Order {} confirmed", orderId);
@@ -63,6 +67,10 @@ public class OrderService {
   public void cancelOrder(String orderId, String reason) {
     Order order =
         orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+    if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.CANCELED) {
+      log.warn("Order {} already in terminal state {}, skipping cancel", orderId, order.getStatus());
+      return;
+    }
     order.setStatus(OrderStatus.CANCELED);
     order.setCancelReason(reason);
     orderRepository.save(order);
