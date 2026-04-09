@@ -56,7 +56,8 @@ public class OrderService {
     Order order =
         orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
     if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.CANCELED) {
-      log.warn("Order {} already in terminal state {}, skipping confirm", orderId, order.getStatus());
+      log.warn(
+          "Order {} already in terminal state {}, skipping confirm", orderId, order.getStatus());
       return;
     }
     order.setStatus(OrderStatus.CONFIRMED);
@@ -68,7 +69,8 @@ public class OrderService {
     Order order =
         orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
     if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.CANCELED) {
-      log.warn("Order {} already in terminal state {}, skipping cancel", orderId, order.getStatus());
+      log.warn(
+          "Order {} already in terminal state {}, skipping cancel", orderId, order.getStatus());
       return;
     }
     order.setStatus(OrderStatus.CANCELED);
