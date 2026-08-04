@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -21,6 +22,7 @@ import org.springframework.kafka.support.converter.JacksonJsonMessageConverter;
 import org.springframework.util.backoff.FixedBackOff;
 
 @Slf4j
+@EnableKafka
 @Configuration
 public class KafkaConsumerConfig {
 
@@ -74,7 +76,6 @@ public class KafkaConsumerConfig {
     ConcurrentKafkaListenerContainerFactory<String, String> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory());
-    // Spring uses the listener method parameter type to convert automatically
     factory.setRecordMessageConverter(new JacksonJsonMessageConverter());
     factory.setCommonErrorHandler(errorHandler());
     factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);

@@ -35,10 +35,19 @@ spring:
     consumer:
       group-id: order-service  # your application name
       auto-offset-reset: earliest   # reads from the beginning if no offset is saved
+      enable-auto-commit: false     # offsets committed manually after successful processing
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer  # deserializes JSON back to objects
       properties:
         spring.json.trusted.packages: "*"  # allows deserialization of any package
+# ---- DLQ ----
+kafka:
+  dlq:
+    backoff-interval-ms: 1000  # wait between retries
+    max-retries: 3             # attempts before routing to DLQ
+    partitions: 1              # DLQ topics are low-throughput, 1 partition is sufficient
+    replicas: 1
+
 # ---- EXTERNAL SERVICES ----
 services:
   inventory:
@@ -46,6 +55,11 @@ services:
     connect-timeout: 2s   # max time to establish a TCP connection
     read-timeout: 5s      # max time to wait for the response once connected
 
+# ---- RATE LIMITER ----
+rate-limiter:
+  enabled: true
+  capacity: 10             # max burst: 10 requests per IP
+  refill-rate-per-second: 2.0  # sustained throughput: 2 req/sec per IP
 # ---- KAFKA DLQ ----
 kafka:
   dlq:
@@ -60,3 +74,5 @@ topics:
     created: order.created              # order-service → orchestrator
     confirmed: order.confirmed          # orchestrator → order-service
     canceled: order.canceled            # orchestrator → order-service
+    confirmed-dlq: order.confirmed.DLQ  # dead-letter for order.confirmed (auto-routed by Spring)
+    canceled-dlq: order.canceled.DLQ    # dead-letter for order.canceled  (auto-routed by Spring)
